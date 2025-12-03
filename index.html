@@ -245,13 +245,24 @@
       html += `<p class="muted">Luck multiplier: ${multiplier.toFixed(2)}x</p>`;
 
       html += `<p>Rarity yang sempat ke-catch:</p>`;
-      RARITIES.forEach(r => {
-        if (counts[r.key] > 0) {
-          html += `<span class="tag ${r.key === targetKey ? "tag-target" : ""}">
-            ${r.label} → ${counts[r.key]}x (${formatTime(timeAtCatch[r.key])})
-          </span>`;
-        }
-      });
+RARITIES.forEach(r => {
+  if (counts[r.key] > 0) {
+    let desc = "";
+
+    if (r.key === targetKey) {
+      desc = "target";
+    } else if (r.denom > targetRarity.denom) {
+      desc = "lebih langka";
+    } else {
+      desc = "lebih mudah";
+    }
+
+    html += `<span class="tag ${r.key === targetKey ? "tag-target" : ""}">
+      ${r.label} → ${counts[r.key]}x (${formatTime(timeAtCatch[r.key])}) 
+      <span class="muted">(${desc})</span>
+    </span>`;
+  }
+});
 
       document.getElementById("results").innerHTML = html;
 
