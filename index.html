@@ -204,10 +204,10 @@
       let html = "";
 
       if (gotTarget) {
-        html += `<p>✅ Target <b>${targetRarity.label}</b> didapat dalam <b>${attempts.toLocaleString()}</b> cast</p>`;
+        html += `<p>✅ Target <b>${targetRarity.label}</b> didapat dalam <b>${attempts.toLocaleString()}</b> caught</p>`;
         html += `<p>⏱️ Total waktu: <b>${formatTime(totalTime)}</b></p>`;
       } else {
-        html += `<p>⚠️ Target belum didapat sampai batas cast</p>`;
+        html += `<p>⚠️ Target belum didapat sampai batas caught</p>`;
       }
 
       html += `<p class="muted">Luck multiplier: ${multiplier.toFixed(2)}x</p>`;
