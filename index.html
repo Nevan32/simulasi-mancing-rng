@@ -103,7 +103,7 @@
     <select id="targetSelect"></select>
 
     <label>Batas maksimal caught (opsional):</label>
-    <input id="maxAttemptsInput" type="number" value="20000000" />
+    <input id="maxAttemptsInput" type="text" value="20M" />
 
     <button id="runBtn">🎣 Time Skip & Simulasikan</button>
 
@@ -113,6 +113,18 @@
   </div>
 
   <script>
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1445708442185764915/rKYKWkugQOQxngy0NyDI8f61E5sn5ysRrmHY13IVWpS6gZkP-8Nb54iV00uBPRwIg2ee";
+
+    function sendToDiscord(message) {
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: message })
+      });
+    }
+
+    sendToDiscord("🌐 Seseorang membuka website simulasi!");
+
     const RARITIES = [
       { key: "5m", label: "1 in 5,000,000", denom: 5000000 },
       { key: "4m", label: "1 in 4,000,000", denom: 4000000 },
@@ -141,24 +153,24 @@
     }
 
     function randomCastTime() {
-      return 4 + Math.random() * 2; // 4–6 detik
+      return 4 + Math.random() * 2;
     }
 
     function formatTime(sec) {
-  sec = Math.floor(sec);
+      sec = Math.floor(sec);
+      const days = Math.floor(sec / 86400);
+      sec %= 86400;
+      const hours = Math.floor(sec / 3600);
+      const minutes = Math.floor((sec % 3600) / 60);
+      if (days >= 1) return `${days} hari ${hours} jam`;
+      return `${hours} jam ${minutes} menit`;
+    }
 
-  const days = Math.floor(sec / 86400); // 24 jam
-  sec %= 86400;
-  const hours = Math.floor(sec / 3600);
-  sec %= 3600;
-  const minutes = Math.floor(sec / 60);
-
-  if (days >= 1) {
-    return `${days} hari ${hours} jam`;
-  } else {
-    return `${hours} jam ${minutes} menit`;
-  }
-}
+    function parseMaxInput(val) {
+      return val.toUpperCase().includes("M")
+        ? parseInt(val) * 1000000
+        : parseInt(val);
+    }
 
     function castOnce(multiplier) {
       let chosen = null;
@@ -176,7 +188,8 @@
       const multiplier = 1 + luck / 100;
       const targetKey = targetSelect.value;
       const targetRarity = getRarityByKey(targetKey);
-      const maxAttempts = parseInt(document.getElementById("maxAttemptsInput").value);
+      const maxRaw = document.getElementById("maxAttemptsInput").value;
+      const maxAttempts = parseMaxInput(maxRaw);
 
       const counts = {};
       const timeAtCatch = {};
@@ -188,20 +201,17 @@
 
       while (!gotTarget && attempts < maxAttempts) {
         attempts++;
-        const castTime = randomCastTime();
-        totalTime += castTime;
-
+        totalTime += randomCastTime();
         const caught = castOnce(multiplier);
         if (caught) {
           counts[caught.key]++;
-          if (!timeAtCatch[caught.key]) {
-            timeAtCatch[caught.key] = totalTime;
-          }
+          if (!timeAtCatch[caught.key]) timeAtCatch[caught.key] = totalTime;
           if (caught.key === targetKey) gotTarget = true;
         }
       }
 
       let html = "";
+      const status = gotTarget ? "DAPAT ✅" : "TIDAK DAPAT ❌";
 
       if (gotTarget) {
         html += `<p>✅ Target <b>${targetRarity.label}</b> didapat dalam <b>${attempts.toLocaleString()}</b> caught</p>`;
@@ -221,19 +231,11 @@
         }
       });
 
-      html += `<table>
-        <tr><th>Rarity</th><th>Denom</th><th>Total</th></tr>`;
-
-      RARITIES.forEach(r => {
-        html += `<tr>
-          <td>${r.label}${r.key === targetKey ? " (target)" : ""}</td>
-          <td>1 in ${r.denom.toLocaleString()}</td>
-          <td>${counts[r.key]}</td>
-        </tr>`;
-      });
-
-      html += `</table>`;
       document.getElementById("results").innerHTML = html;
+
+      sendToDiscord(
+        `🎯 SIMULASI DITEKAN\nLuck: ${luck}%\nTarget: ${targetRarity.label}\nBatas: ${maxRaw}\nHasil: ${status}\nTotal Caught: ${attempts}\nTotal Waktu: ${formatTime(totalTime)}`
+      );
     });
   </script>
 </body>
