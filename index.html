@@ -26,23 +26,9 @@
       border: 1px solid #1e293b;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 4px;
-    }
-
-    .subtitle {
-      font-size: 0.85rem;
-      color: #9ca3af;
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.9rem;
-      margin-top: 10px;
-      margin-bottom: 4px;
-    }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .subtitle { font-size: 0.85rem; color: #9ca3af; margin-bottom: 16px; }
+    label { display: block; font-size: 0.9rem; margin-top: 10px; margin-bottom: 4px; }
 
     input, select {
       width: 100%;
@@ -52,13 +38,6 @@
       background: #020617;
       color: #e5e7eb;
       font-size: 0.9rem;
-      box-sizing: border-box;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 1px #38bdf8;
     }
 
     button {
@@ -71,12 +50,6 @@
       color: #0b1120;
       font-weight: 600;
       cursor: pointer;
-      font-size: 0.95rem;
-    }
-
-    button:active {
-      transform: translateY(1px);
-      filter: brightness(0.9);
     }
 
     .results {
@@ -86,12 +59,8 @@
       border-radius: 12px;
       padding: 10px 12px;
       border: 1px solid #1e293b;
-      max-height: 260px;
+      max-height: 300px;
       overflow: auto;
-    }
-
-    .results p {
-      margin: 4px 0;
     }
 
     table {
@@ -103,87 +72,47 @@
 
     th, td {
       padding: 4px 6px;
-      text-align: left;
       border-bottom: 1px solid #111827;
     }
 
-    th {
-      font-weight: 600;
-      color: #9ca3af;
-    }
-
     .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      display: inline-block;
       background: #0f172a;
       border-radius: 999px;
       padding: 2px 8px;
       font-size: 0.75rem;
-      margin-right: 4px;
-      margin-bottom: 4px;
+      margin: 2px;
       border: 1px solid #1e293b;
     }
 
-    .tag-rare {
-      border-color: #22c55e;
-      color: #bbf7d0;
-    }
-
-    .tag-target {
-      border-color: #38bdf8;
-      color: #e0f2fe;
-    }
-
-    .muted {
-      color: #6b7280;
-    }
+    .tag-target { border-color: #38bdf8; }
+    .tag-rare { border-color: #22c55e; }
+    .muted { color: #9ca3af; }
   </style>
 </head>
+
 <body>
   <div class="card">
     <h1>Simulasi Mancing RNG</h1>
-    <div class="subtitle">
-      Test hoki kamu untuk berbagai rarity (1 in X) dengan luck% custom.
-    </div>
+    <div class="subtitle">Test Hoki Lu Disini Dasar Luck Issue</div>
 
-    <label for="luckInput">
-      Luck (%) &mdash; misalnya 0, 50, 100 (disimulasi sebagai pengali chance)
-    </label>
-    <input
-      id="luckInput"
-      type="number"
-      value="0"
-      step="1"
-      min="0"
-      placeholder="misalnya 50 untuk +50% luck"
-    />
+    <label>Luck (%)</label>
+    <input id="luckInput" type="number" value="0" min="0" />
 
-    <label for="targetSelect">
-      Stop ketika dapat rarity (1 in ...):
-    </label>
+    <label>Stop ketika dapat rarity:</label>
     <select id="targetSelect"></select>
 
-    <label for="maxAttemptsInput">
-      Batas maksimal caught (biar browser nggak nge-freeze) &mdash; opsional
-    </label>
-    <input
-      id="maxAttemptsInput"
-      type="number"
-      value="20000000"
-      step="100000"
-      min="1"
-    />
+    <label>Batas maksimal cast:</label>
+    <input id="maxAttemptsInput" type="number" value="20000000" />
 
     <button id="runBtn">🎣 Time Skip & Simulasikan</button>
 
     <div class="results" id="results">
-      <p class="muted">Klik "Time Skip & Simulasikan" buat lihat hasil.</p>
+      <p class="muted">Klik tombol untuk simulasi.</p>
     </div>
   </div>
 
   <script>
-    // List rarity dari yang paling langka ke yang paling mudah
     const RARITIES = [
       { key: "5m", label: "1 in 5,000,000", denom: 5000000 },
       { key: "4m", label: "1 in 4,000,000", denom: 4000000 },
@@ -195,178 +124,117 @@
       { key: "800k", label: "1 in 800,000", denom: 800000 },
       { key: "750k", label: "1 in 750,000", denom: 750000 },
       { key: "450k", label: "1 in 450,000", denom: 450000 },
-      { key: "250k", label: "1 in 250,000", denom: 250000 }
+      { key: "200k", label: "1 in 200,000", denom: 200000 }
     ];
 
     const targetSelect = document.getElementById("targetSelect");
-    const luckInput = document.getElementById("luckInput");
-    const maxAttemptsInput = document.getElementById("maxAttemptsInput");
-    const runBtn = document.getElementById("runBtn");
-    const resultsDiv = document.getElementById("results");
-
-    // Isi dropdown target rarity
-    RARITIES.forEach((r, index) => {
+    RARITIES.forEach(r => {
       const opt = document.createElement("option");
       opt.value = r.key;
       opt.textContent = r.label;
-      // default: stop di 1 in 4m (bisa diganti)
       if (r.key === "4m") opt.selected = true;
       targetSelect.appendChild(opt);
     });
 
     function getRarityByKey(key) {
-      return RARITIES.find((r) => r.key === key);
+      return RARITIES.find(r => r.key === key);
     }
 
-    function formatNumber(n) {
-      return n.toLocaleString("en-US");
+    function randomCastTime() {
+      return 4 + Math.random() * 2; // 4–6 detik
     }
 
-    // Simulasi 1 cast
-    // Di sini kita asumsikan:
-    // - Tiap rarity punya chance independen (1 / denom * multiplier)
-    // - Kalau lebih dari 1 "kena" sekaligus, kita ambil yang PALING LANGKA (denom terbesar)
+    function formatTime(sec) {
+  sec = Math.floor(sec);
+
+  const days = Math.floor(sec / 86400); // 24 jam
+  sec %= 86400;
+  const hours = Math.floor(sec / 3600);
+  sec %= 3600;
+  const minutes = Math.floor(sec / 60);
+
+  if (days >= 1) {
+    return `${days} hari ${hours} jam`;
+  } else {
+    return `${hours} jam ${minutes} menit`;
+  }
+}
+
     function castOnce(multiplier) {
       let chosen = null;
-
       for (const rarity of RARITIES) {
-        const baseProb = 1 / rarity.denom;
-        const effectiveProb = Math.min(baseProb * multiplier, 1);
-
-        if (Math.random() < effectiveProb) {
-          if (!chosen || rarity.denom > chosen.denom) {
-            chosen = rarity;
-          }
+        const prob = Math.min((1 / rarity.denom) * multiplier, 1);
+        if (Math.random() < prob) {
+          if (!chosen || rarity.denom > chosen.denom) chosen = rarity;
         }
       }
-
-      return chosen; // bisa null (nggak dapat rare)
+      return chosen;
     }
 
-    function simulate() {
-      const luckPercent = parseFloat(luckInput.value || "0");
-      const multiplier = 1 + (isNaN(luckPercent) ? 0 : luckPercent / 100);
-
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const luck = parseFloat(document.getElementById("luckInput").value || 0);
+      const multiplier = 1 + luck / 100;
       const targetKey = targetSelect.value;
       const targetRarity = getRarityByKey(targetKey);
-      if (!targetRarity) {
-        alert("Target rarity tidak valid.");
-        return;
-      }
+      const maxAttempts = parseInt(document.getElementById("maxAttemptsInput").value);
 
-      let maxAttempts = parseInt(maxAttemptsInput.value || "0", 10);
-      if (isNaN(maxAttempts) || maxAttempts <= 0) {
-        maxAttempts = 20000000; // default safety
-      }
-
-      // Inisialisasi counter per rarity
       const counts = {};
-      RARITIES.forEach((r) => {
-        counts[r.key] = 0;
-      });
+      const timeAtCatch = {};
+      RARITIES.forEach(r => counts[r.key] = 0);
 
+      let totalTime = 0;
       let attempts = 0;
       let gotTarget = false;
 
-      // Simulasi “time skip”: loop sampai dapat target atau sampai batas cast
       while (!gotTarget && attempts < maxAttempts) {
         attempts++;
+        const castTime = randomCastTime();
+        totalTime += castTime;
+
         const caught = castOnce(multiplier);
         if (caught) {
           counts[caught.key]++;
-
-          if (caught.key === targetKey) {
-            gotTarget = true;
+          if (!timeAtCatch[caught.key]) {
+            timeAtCatch[caught.key] = totalTime;
           }
+          if (caught.key === targetKey) gotTarget = true;
         }
       }
 
-      // Bangun teks hasil
-      const lines = [];
+      let html = "";
 
       if (gotTarget) {
-        lines.push(
-          `<p>✅ <b>Berhasil dapat ${targetRarity.label}</b> setelah <b>${formatNumber(
-            attempts
-          )}</b> cast.</p>`
-        );
+        html += `<p>✅ Target <b>${targetRarity.label}</b> didapat dalam <b>${attempts.toLocaleString()}</b> cast</p>`;
+        html += `<p>⏱️ Total waktu: <b>${formatTime(totalTime)}</b></p>`;
       } else {
-        lines.push(
-          `<p>⚠️ <b>Belum dapat ${targetRarity.label}</b> setelah mencapai batas <b>${formatNumber(
-            attempts
-          )}</b> cast.</p>`
-        );
+        html += `<p>⚠️ Target belum didapat sampai batas cast</p>`;
       }
 
-      lines.push(
-        `<p class="muted">Luck multiplier: <b>${multiplier.toFixed(
-          2
-        )}x</b> (dari ${luckPercent || 0}% luck).</p>`
-      );
+      html += `<p class="muted">Luck multiplier: ${multiplier.toFixed(2)}x</p>`;
 
-      // Tag cepat: apa aja yang sempat ke-catch
-      const caughtSomething = RARITIES.filter((r) => counts[r.key] > 0);
-      if (caughtSomething.length === 0) {
-        lines.push(`<p>Tidak ada dari list rarity ultra-rare yang ke-catch.</p>`);
-      } else {
-        let tagHtml = "";
-        for (const r of caughtSomething) {
-          const isTarget = r.key === targetKey;
-          const isRarer = r.denom > targetRarity.denom; // denom lebih besar = lebih langka
-          const extraClass = isTarget
-            ? "tag-target"
-            : isRarer
-            ? "tag-rare"
-            : "";
-          const labelExtra = isTarget
-            ? "target"
-            : isRarer
-            ? "lebih langka"
-            : "lebih mudah";
-
-          tagHtml += `<span class="tag ${extraClass}">
-              ${r.label}
-              <span class="muted">(${labelExtra})</span>
-            </span>`;
+      html += `<p>Rarity yang sempat ke-catch:</p>`;
+      RARITIES.forEach(r => {
+        if (counts[r.key] > 0) {
+          html += `<span class="tag ${r.key === targetKey ? "tag-target" : ""}">
+            ${r.label} → ${counts[r.key]}x (${formatTime(timeAtCatch[r.key])})
+          </span>`;
         }
-        lines.push(`<p>Rarity yang sempat ke-catch:</p>`);
-        lines.push(`<p>${tagHtml}</p>`);
-      }
+      });
 
-      // Tabel detail semua rarity
-      let tableHtml = `
-        <table>
-          <thead>
-            <tr>
-              <th>Rarity</th>
-              <th>Denom</th>
-              <th>Jumlah Caught</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
+      html += `<table>
+        <tr><th>Rarity</th><th>Denom</th><th>Total</th></tr>`;
 
-      for (const r of RARITIES) {
-        const count = counts[r.key];
-        tableHtml += `
-          <tr>
-            <td>${r.label}${
-          r.key === targetKey ? ' <span class="muted">(target)</span>' : ""
-        }</td>
-            <td>1 in ${formatNumber(r.denom)}</td>
-            <td>${formatNumber(count)}</td>
-          </tr>
-        `;
-      }
+      RARITIES.forEach(r => {
+        html += `<tr>
+          <td>${r.label}${r.key === targetKey ? " (target)" : ""}</td>
+          <td>1 in ${r.denom.toLocaleString()}</td>
+          <td>${counts[r.key]}</td>
+        </tr>`;
+      });
 
-      tableHtml += `</tbody></table>`;
-
-      lines.push(tableHtml);
-
-      resultsDiv.innerHTML = lines.join("");
-    }
-
-    runBtn.addEventListener("click", simulate);
+      html += `</table>`;
+      document.getElementById("results").innerHTML = html;
+    });
   </script>
 </body>
 </html>
